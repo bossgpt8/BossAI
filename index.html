@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BossAI - Your Intelligent Assistant</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                            950: '#030712'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-black text-white font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <aside id="sidebar" class="w-72 bg-dark-950 border-r border-dark-800 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full fixed lg:relative inset-y-0 left-0 z-50">
+            <div class="p-5 border-b border-dark-800">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl">
+                        ⚡
+                    </div>
+                    <span class="text-lg font-bold text-white">BossAI</span>
+                </div>
+                <button id="newChatBtn" class="w-full py-3 px-4 bg-white text-black font-semibold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-all duration-200">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+
+            <div id="conversationList" class="flex-1 overflow-y-auto p-3">
+                <div class="text-xs font-semibold text-dark-500 uppercase tracking-wider px-3 py-2">
+                    Recent Chats
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-dark-800 space-y-4">
+                <div id="userInfo" class="hidden items-center gap-3 p-3 bg-dark-900 rounded-xl border border-dark-800"></div>
+                <button id="authBtn" class="w-full py-3 px-4 bg-dark-900 border border-dark-700 rounded-xl text-white font-medium flex items-center justify-center gap-2 hover:bg-dark-800 hover:border-dark-600 transition-all duration-200">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Sign In with Google
+                </button>
+                <div>
+                    <label class="block text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2">AI Model</label>
+                    <select id="modelSelect" class="w-full p-3 bg-dark-900 border border-dark-700 rounded-xl text-white text-sm cursor-pointer focus:outline-none focus:border-dark-500 transition-colors">
+                        <optgroup label="Vision Capable">
+                            <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
+                            <option value="meta-llama/llama-4-scout:free">Llama 4 Scout</option>
+                        </optgroup>
+                        <optgroup label="Text Only">
+                            <option value="deepseek/deepseek-r1:free" selected>DeepSeek R1</option>
+                            <option value="deepseek/deepseek-chat:free">DeepSeek V3</option>
+                            <option value="qwen/qwen3-32b:free">Qwen3 32B</option>
+                            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
+                            <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div id="statusIndicator" class="flex items-center gap-3 p-3 bg-dark-900 border border-dark-800 rounded-xl text-sm">
+                    <span class="status-dot w-2 h-2 rounded-full bg-dark-500 animate-pulse"></span>
+                    <span class="status-text text-dark-400">Checking...</span>
+                </div>
+            </div>
+        </aside>
+
+        <button id="mobileMenuBtn" class="lg:hidden fixed top-4 left-4 z-40 w-11 h-11 bg-dark-900 border border-dark-700 rounded-xl text-white flex items-center justify-center hover:bg-dark-800 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+        </button>
+
+        <div id="overlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"></div>
+
+        <main class="flex-1 flex flex-col min-w-0 bg-black">
+            <div class="px-6 py-4 border-b border-dark-800 bg-dark-950/80 backdrop-blur-md sticky top-0 z-10">
+                <div class="max-w-4xl mx-auto flex items-center justify-between">
+                    <div class="flex items-center gap-4 pl-12 lg:pl-0">
+                        <h1 id="headerTitle" class="text-lg font-bold">BossAI</h1>
+                        <span id="modelBadge" class="px-3 py-1 bg-white text-black text-xs font-semibold rounded-full">DeepSeek R1</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="voiceToggle" class="w-10 h-10 bg-dark-900 border border-dark-700 rounded-xl text-dark-400 flex items-center justify-center hover:text-white hover:bg-dark-800 transition-colors" title="Toggle voice responses">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="messagesArea" class="flex-1 overflow-y-auto">
+                <div id="welcomeScreen" class="flex items-center justify-center min-h-full p-8">
+                    <div class="text-center max-w-2xl">
+                        <div class="relative w-24 h-24 mx-auto mb-8">
+                            <div class="w-full h-full bg-white rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.3)]">
+                                <span class="text-5xl">⚡</span>
+                            </div>
+                        </div>
+                        <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">Welcome to BossAI</h2>
+                        <p class="text-dark-400 text-lg mb-8">Your intelligent assistant powered by multiple AI models. Ask questions, analyze images, generate images, and chat with voice!</p>
+                        
+                        <div class="flex flex-wrap justify-center gap-3 mb-10">
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-dark-900 border border-dark-800 rounded-full text-sm text-dark-300">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                                Multiple AI Models
+                            </span>
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-dark-900 border border-dark-800 rounded-full text-sm text-dark-300">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                Vision Analysis
+                            </span>
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-dark-900 border border-dark-800 rounded-full text-sm text-dark-300">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                                Voice Chat
+                            </span>
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-dark-900 border border-dark-800 rounded-full text-sm text-dark-300">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                Image Generation
+                            </span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                            <button class="suggestion-card group p-5 bg-dark-900 border border-dark-800 rounded-2xl text-left flex items-start gap-4 hover:bg-dark-800 hover:border-dark-600 transition-all duration-200" data-prompt="Explain photosynthesis in simple terms">
+                                <div class="w-12 h-12 bg-dark-800 group-hover:bg-dark-700 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                                    <span class="text-2xl">🌱</span>
+                                </div>
+                                <div>
+                                    <span class="block font-semibold text-white">Learn Biology</span>
+                                    <span class="text-sm text-dark-500">Explain photosynthesis</span>
+                                </div>
+                            </button>
+                            <button class="suggestion-card group p-5 bg-dark-900 border border-dark-800 rounded-2xl text-left flex items-start gap-4 hover:bg-dark-800 hover:border-dark-600 transition-all duration-200" data-prompt="Help me solve this quadratic equation: x² + 5x + 6 = 0">
+                                <div class="w-12 h-12 bg-dark-800 group-hover:bg-dark-700 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                                    <span class="text-2xl">📐</span>
+                                </div>
+                                <div>
+                                    <span class="block font-semibold text-white">Solve Math</span>
+                                    <span class="text-sm text-dark-500">Quadratic equations</span>
+                                </div>
+                            </button>
+                            <button class="suggestion-card group p-5 bg-dark-900 border border-dark-800 rounded-2xl text-left flex items-start gap-4 hover:bg-dark-800 hover:border-dark-600 transition-all duration-200" data-prompt="Write a Python function to calculate factorial">
+                                <div class="w-12 h-12 bg-dark-800 group-hover:bg-dark-700 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                                    <span class="text-2xl">💻</span>
+                                </div>
+                                <div>
+                                    <span class="block font-semibold text-white">Code Help</span>
+                                    <span class="text-sm text-dark-500">Python factorial function</span>
+                                </div>
+                            </button>
+                            <button class="suggestion-card group p-5 bg-dark-900 border border-dark-800 rounded-2xl text-left flex items-start gap-4 hover:bg-dark-800 hover:border-dark-600 transition-all duration-200" data-prompt="Generate an image of a beautiful sunset over the ocean">
+                                <div class="w-12 h-12 bg-dark-800 group-hover:bg-dark-700 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                                    <span class="text-2xl">🎨</span>
+                                </div>
+                                <div>
+                                    <span class="block font-semibold text-white">Generate Image</span>
+                                    <span class="text-sm text-dark-500">Create beautiful artwork</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="messagesContainer" class="max-w-4xl mx-auto p-6"></div>
+            </div>
+
+            <div class="p-5 bg-gradient-to-t from-black via-dark-950/95 to-transparent border-t border-dark-800">
+                <div id="imagePreviewContainer" class="max-w-4xl mx-auto mb-4 flex flex-wrap gap-3"></div>
+                <div id="generatedImagePreview" class="max-w-4xl mx-auto mb-4"></div>
+                <div class="max-w-4xl mx-auto flex items-end gap-3 bg-dark-900 rounded-2xl p-3 border border-dark-800 focus-within:border-dark-600 transition-colors">
+                    <div class="flex gap-1">
+                        <button id="attachBtn" class="w-10 h-10 rounded-xl text-dark-400 flex items-center justify-center hover:text-white hover:bg-dark-800 transition-colors" title="Attach image (Vision models only)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </button>
+                        <button id="generateImageBtn" class="w-10 h-10 rounded-xl text-dark-400 flex items-center justify-center hover:text-white hover:bg-dark-800 transition-colors" title="Generate image">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" multiple hidden>
+                    <textarea id="messageInput" class="flex-1 bg-transparent text-white resize-none max-h-48 leading-relaxed py-2 focus:outline-none placeholder-dark-500" placeholder="Ask me anything or say 'generate image of...'" rows="1"></textarea>
+                    <div class="flex gap-1">
+                        <button id="micBtn" class="w-10 h-10 rounded-xl text-dark-400 flex items-center justify-center hover:text-white hover:bg-dark-800 transition-colors" title="Voice input">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </button>
+                        <button id="sendBtn" class="w-11 h-11 bg-white text-black rounded-xl flex items-center justify-center opacity-50 transition-all duration-200 disabled:cursor-not-allowed enabled:hover:scale-105 enabled:opacity-100 enabled:shadow-[0_0_20px_rgba(255,255,255,0.3)]" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-dark-600 mt-3 max-w-4xl mx-auto">BossAI can make mistakes. Verify important information.</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="imageGenModal" class="image-gen-modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-dark-900 rounded-2xl max-w-lg w-full border border-dark-700 shadow-2xl">
+            <div class="flex items-center justify-between p-5 border-b border-dark-800">
+                <h3 class="text-lg font-semibold">Generate Image</h3>
+                <button id="closeImageModal" class="text-dark-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <textarea id="imagePrompt" class="w-full p-4 bg-dark-800 border border-dark-700 rounded-xl text-white resize-none focus:outline-none focus:border-dark-500 placeholder-dark-500" placeholder="Describe the image you want to generate..." rows="4"></textarea>
+                <div class="flex gap-3">
+                    <button id="cancelImageGen" class="flex-1 py-3 px-4 bg-dark-800 border border-dark-700 rounded-xl text-white font-medium hover:bg-dark-700 transition-colors">Cancel</button>
+                    <button id="confirmImageGen" class="flex-1 py-3 px-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-200 transition-colors">
+                        <span class="btn-text">Generate</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] hidden items-center justify-center p-4">
+        <div class="bg-dark-950 rounded-2xl max-w-md w-full border border-dark-800 shadow-2xl overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
+                        ⚡
+                    </div>
+                    <h2 id="authTitle" class="text-2xl font-bold text-white mb-2">Welcome back</h2>
+                    <p id="authSubtitle" class="text-dark-400">Sign in to continue to BossAI</p>
+                </div>
+
+                <div id="authTabs" class="flex bg-dark-900 rounded-xl p-1 mb-6">
+                    <button id="loginTab" class="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all bg-white text-black">Log in</button>
+                    <button id="signupTab" class="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all text-dark-400 hover:text-white">Sign up</button>
+                </div>
+
+                <form id="authForm" class="space-y-4">
+                    <div id="nameField" class="hidden">
+                        <label class="block text-sm font-medium text-dark-300 mb-2">Full Name</label>
+                        <input type="text" id="authName" class="w-full p-3.5 bg-dark-900 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark-300 mb-2">Email address</label>
+                        <input type="email" id="authEmail" class="w-full p-3.5 bg-dark-900 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors" placeholder="name@example.com" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-dark-300 mb-2">Password</label>
+                        <div class="relative">
+                            <input type="password" id="authPassword" class="w-full p-3.5 bg-dark-900 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors pr-12" placeholder="Enter your password" required>
+                            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-white transition-colors">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="confirmPasswordField" class="hidden">
+                        <label class="block text-sm font-medium text-dark-300 mb-2">Confirm Password</label>
+                        <input type="password" id="authConfirmPassword" class="w-full p-3.5 bg-dark-900 border border-dark-700 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors" placeholder="Confirm your password">
+                    </div>
+                    <div id="authError" class="hidden p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm"></div>
+                    <button type="submit" id="authSubmit" class="w-full py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
+                        <span id="authSubmitText">Continue</span>
+                        <svg id="authSubmitLoader" class="hidden animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" stroke-opacity="0.3"/>
+                            <path d="M12 2a10 10 0 0 1 10 10"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-dark-800"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-dark-950 text-dark-500">or continue with</span>
+                    </div>
+                </div>
+
+                <button id="googleSignInBtn" class="w-full py-3.5 bg-dark-900 border border-dark-700 rounded-xl text-white font-medium flex items-center justify-center gap-3 hover:bg-dark-800 hover:border-dark-600 transition-all">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <p class="text-center text-dark-500 text-sm mt-6">
+                    By continuing, you agree to our Terms of Service and Privacy Policy
+                </p>
+            </div>
+            <button id="closeAuthModal" class="absolute top-4 right-4 text-dark-400 hover:text-white text-2xl">&times;</button>
+            <button id="skipAuth" class="w-full py-4 bg-dark-900 border-t border-dark-800 text-dark-400 text-sm hover:text-white hover:bg-dark-800 transition-all">
+                Continue without signing in
+            </button>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "bossai-chatbot",
+  "version": "1.0.0",
+  "description": "BossAI - AI Chatbot with multiple models, image generation, and voice chat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["ai", "chatbot", "openrouter", "firebase"],
+  "license": "MIT"
+}
