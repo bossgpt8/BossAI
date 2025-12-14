@@ -1,32 +1,9 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.css",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    { "src": "/api/chat", "dest": "/api/chat.js" },
-    { "src": "/api/generate-image", "dest": "/api/generate-image.js" },
-    { "src": "/api/status", "dest": "/api/status.js" },
-    { "src": "/api/firebase-config", "dest": "/api/firebase-config.js" },
-    { "src": "/app.js", "dest": "/app.js" },
-    { "src": "/styles.css", "dest": "/styles.css" },
-    { "src": "/", "dest": "/index.html" },
-    { "src": "/index.html", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/api/chat.js" },
+    { "source": "/api/generate-image", "destination": "/api/generate-image.js" },
+    { "source": "/api/status", "destination": "/api/status.js" },
+    { "source": "/api/firebase-config", "destination": "/api/firebase-config.js" }
   ],
   "headers": [
     {
