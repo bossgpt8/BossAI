@@ -955,16 +955,34 @@ class AIChatApp {
             const response = await fetch('/api/status');
             const data = await response.json();
             
+            const statusDot = this.statusIndicator.querySelector('.status-dot');
+            const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            this.statusIndicator.classList.add('status-indicator');
+            this.statusIndicator.classList.remove('ready', 'error');
+            
             if (data.configured) {
-                this.statusIndicator.className = 'status-indicator ready';
-                this.statusIndicator.querySelector('.status-text').textContent = 'Ready';
+                this.statusIndicator.classList.add('ready');
+                statusDot.style.background = '#10b981';
+                statusDot.style.animation = 'none';
+                statusText.textContent = 'Ready';
+                statusText.style.color = '#10b981';
             } else {
-                this.statusIndicator.className = 'status-indicator error';
-                this.statusIndicator.querySelector('.status-text').textContent = 'API Key Missing';
+                this.statusIndicator.classList.add('error');
+                statusDot.style.background = '#ef4444';
+                statusDot.style.animation = 'none';
+                statusText.textContent = 'API Key Missing';
+                statusText.style.color = '#ef4444';
             }
         } catch (error) {
-            this.statusIndicator.className = 'status-indicator error';
-            this.statusIndicator.querySelector('.status-text').textContent = 'Connection Error';
+            const statusDot = this.statusIndicator.querySelector('.status-dot');
+            const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            this.statusIndicator.classList.add('status-indicator', 'error');
+            statusDot.style.background = '#ef4444';
+            statusDot.style.animation = 'none';
+            statusText.textContent = 'Connection Error';
+            statusText.style.color = '#ef4444';
         }
     }
     
