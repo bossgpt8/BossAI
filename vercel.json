@@ -23,6 +23,17 @@
     { "src": "/api/generate-image", "dest": "/api/generate-image.js" },
     { "src": "/api/status", "dest": "/api/status.js" },
     { "src": "/api/firebase-config", "dest": "/api/firebase-config.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/app.js", "dest": "/app.js" },
+    { "src": "/styles.css", "dest": "/styles.css" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/index.html", "dest": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
   ]
 }
