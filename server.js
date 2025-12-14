@@ -152,7 +152,9 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     
-    let filePath = req.url === '/' ? '/index.html' : req.url;
+    // Parse URL to remove query strings
+    const urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
+    let filePath = urlPath === '/' ? '/index.html' : urlPath;
     filePath = path.join(__dirname, filePath);
     
     const ext = path.extname(filePath);
