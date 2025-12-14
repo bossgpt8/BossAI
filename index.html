@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BossAI - Your Intelligent Assistant</title>
+    <title>BossAI - Intelligent ChatBot and Personal Assistant</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -74,18 +74,28 @@
                 <div>
                     <label class="block text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2">AI Model</label>
                     <select id="modelSelect" class="w-full p-3 bg-dark-900 border border-dark-700 rounded-xl text-white text-sm cursor-pointer focus:outline-none focus:border-dark-500 transition-colors">
-                        <optgroup label="Vision Capable">
-                            <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
-                            <option value="meta-llama/llama-4-scout:free">Llama 4 Scout</option>
+                        <optgroup label="Vision Capable" (Understand Images 'Use this if you want to send Images)>
+                            <option value="google/gemma-3-12b-it:free">Gemma 3 12B</option>
+                            <option value="google/gemma-3n-e2b-it:free">Gemma</option>
                         </optgroup>
-                        <optgroup label="Text Only">
-                            <option value="deepseek/deepseek-r1:free" selected>DeepSeek R1</option>
-                            <option value="deepseek/deepseek-chat:free">DeepSeek V3</option>
-                            <option value="qwen/qwen3-32b:free">Qwen3 32B</option>
-                            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
-                            <option value="mistralai/mistral-small-3.1-24b-instruct:free">Mistral</option>
+                        <optgroup label="Text Only" (General Tasks)>
+                            <option value="amazon/nova-2-lite-v1:free" selected>Nova</option>
+                            <option value="openai/gpt-oss-20b:free">Open AI</option>
+                            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama</option>
+                            <option value="qwen/qwen3-235b-a22b:free">Qwen3</option>
+                            <option value="google/gemini-2.0-flash-exp:free">Gemini</option>
+                            <option value="allenai/olmo-3-32b-think:free">Olmo</option>
+                            <option value="mistralai/mistral-7b-instruct:free">Mistral</option>
+                            <option value="nousresearch/hermes-3-llama-3.1-405b:free">Hermes</option>
                         </optgroup>
-                    </select>
+                        <optgroup label="Image Generation" (Create Images 'Use this to create an image)>
+                              <option value="hf-z-image-turbo">Z-Image-Turbo (Fast/Free)</option>
+                                 <option value="hf-sdxl-base">SDXL (High-Quality/Free)</option>
+                        </optgroup>
+                        <optgroup label="Code Generation" (Writing Codes and debugging)>
+                           <option value="qwen/qwen3-coder:free">Qwen3</option>
+                            <option value="kwaipilot/kat-coder-pro:free">KAT-Coder</option>
+                        </optgroup>                    </select>
                 </div>
                 <div id="statusIndicator" class="hidden"></div>
             </div>
