@@ -99,12 +99,24 @@ class AIChatApp {
                 this.firebaseReady = false;
                 this.hideAuthButton();
                 this.loadConversations();
+                this.showLocalStorageNotice();
             }
         } catch (error) {
             console.log('Firebase init failed, using localStorage');
             this.firebaseReady = false;
             this.hideAuthButton();
             this.loadConversations();
+            this.showLocalStorageNotice();
+        }
+    }
+    
+    showLocalStorageNotice() {
+        const hasSeenNotice = localStorage.getItem('local_storage_notice_seen');
+        if (!hasSeenNotice) {
+            setTimeout(() => {
+                this.showNotification('Your chats are saved locally on this device. Sign in to sync across devices!', 'info', 5000);
+                localStorage.setItem('local_storage_notice_seen', 'true');
+            }, 2000);
         }
     }
     
@@ -341,7 +353,10 @@ class AIChatApp {
         if (!this.user && !hasSkipped && !this.hasShownAuthModal && this.firebaseReady) {
             this.hasShownAuthModal = true;
             setTimeout(() => {
-                this.openAuthModal();
+                this.showNotification('Sign in to sync your chat history across all devices!', 'info', 5000);
+                setTimeout(() => {
+                    this.openAuthModal();
+                }, 1000);
             }, 1500);
         }
     }
@@ -848,7 +863,7 @@ class AIChatApp {
         }
     }
     
-    showNotification(message, type = 'info') {
+    showNotification(message, type = 'info', duration = 3000) {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.style.cssText = `
@@ -872,7 +887,7 @@ class AIChatApp {
         setTimeout(() => {
             notification.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        }, duration);
     }
     
     openImageGenModal() {
