@@ -25,11 +25,11 @@ module.exports = async function handler(req, res) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://bossai.vercel.app',
+        'HTTP-Referer': 'https://bossgpt-ai.vercel.app',
         'X-Title': 'BossAI'
       },
       body: JSON.stringify({
-        model: model || 'deepseek/deepseek-r1:free',
+        model: model || 'amazon/nova-2-lite-v1:free',
         messages: messages
       })
     });
