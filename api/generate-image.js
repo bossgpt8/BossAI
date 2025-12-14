@@ -33,13 +33,8 @@ module.exports = async function handler(req, res) {
     let parameters = {};
     
     const HF_MODEL_MAP = {
-        // Z-Image-Turbo (Your new, fast model)
         "hf-z-image-turbo": "Tongyi-MAI/Z-Image-Turbo",
-        
-        // Stable Diffusion XL (Your existing high-quality model)
         "hf-sdxl-base": "stabilityai/stable-diffusion-xl-base-1.0",
-        
-        // You can add more models here easily!
     };
     
     const selectedHFModel = HF_MODEL_MAP[modelId];
@@ -52,21 +47,26 @@ module.exports = async function handler(req, res) {
     
     // --- 3. ADJUST PARAMETERS BASED ON THE MODEL ---
     if (modelId === "hf-z-image-turbo") {
-        // Z-Image-Turbo is highly optimized and often works best with low steps and guidance
+        // Optimized parameters for Z-Image-Turbo (fast)
         parameters = {
-            num_inference_steps: 9, // Recommended 8-9 steps for Turbo speed
-            guidance_scale: 0.0,    // Recommended 0.0 for Z-Image-Turbo
-            negative_prompt: "blurry, low quality, distorted, bad text, watermark"
+            num_inference_steps: 9, 
+            guidance_scale: 0.0,    
+            negative_prompt: "blurry, low quality, distorted, bad text, watermark",
+            width: 1024,   // <-- ADDED: Default to high resolution
+            height: 1024,  // <-- ADDED: Default to high resolution
         };
     } else { // Defaults for SDXL (hf-sdxl-base)
+        // Optimized parameters for SDXL (high quality)
         parameters = {
             num_inference_steps: 30,
             guidance_scale: 7.5,
-            negative_prompt: "blurry, low quality, distorted, bad anatomy"
+            negative_prompt: "blurry, low quality, distorted, bad anatomy",
+            width: 1024,   // <-- ADDED: Native SDXL resolution
+            height: 1024,  // <-- ADDED: Native SDXL resolution
         };
     }
 
-    // --- 4. API CALL (same as before, but with dynamic URL and parameters) ---
+    // --- 4. API CALL ---
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -75,7 +75,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         inputs: prompt,
-        parameters: parameters, // Use the dynamically set parameters
+        parameters: parameters, // Uses the dynamically set parameters
       })
     });
 
@@ -84,13 +84,16 @@ module.exports = async function handler(req, res) {
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error || `Image generation failed with status: ${response.status}`;
       console.error(`HF API Error for ${modelId}:`, errorMessage);
+      // Check for specific Hugging Face model loading error (503)
+      if (response.status === 503) {
+          throw new Error(`Model ${selectedHFModel} is currently loading and will be available shortly. Please try again in 30 seconds.`);
+      }
       throw new Error(errorMessage);
     }
 
-    // --- 5. RESPONSE HANDLING (Keep these the same) ---
+    // --- 5. RESPONSE HANDLING ---
     const imageBuffer = await response.arrayBuffer();
     const base64Image = Buffer.from(imageBuffer).toString('base64');
-    // NOTE: Hugging Face usually returns JPG, so 'image/jpeg' is safest.
     const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
     return res.status(200).json({ imageUrl });
