@@ -99,24 +99,12 @@ class AIChatApp {
                 this.firebaseReady = false;
                 this.hideAuthButton();
                 this.loadConversations();
-                this.showLocalStorageNotice();
             }
         } catch (error) {
             console.log('Firebase init failed, using localStorage');
             this.firebaseReady = false;
             this.hideAuthButton();
             this.loadConversations();
-            this.showLocalStorageNotice();
-        }
-    }
-    
-    showLocalStorageNotice() {
-        const hasSeenNotice = localStorage.getItem('local_storage_notice_seen');
-        if (!hasSeenNotice) {
-            setTimeout(() => {
-                this.showNotification('Your chats are saved locally on this device. Sign in to sync across devices!', 'info', 5000);
-                localStorage.setItem('local_storage_notice_seen', 'true');
-            }, 2000);
         }
     }
     
@@ -353,10 +341,7 @@ class AIChatApp {
         if (!this.user && !hasSkipped && !this.hasShownAuthModal && this.firebaseReady) {
             this.hasShownAuthModal = true;
             setTimeout(() => {
-                this.showNotification('Sign in to sync your chat history across all devices!', 'info', 5000);
-                setTimeout(() => {
-                    this.openAuthModal();
-                }, 1000);
+                this.openAuthModal();
             }, 1500);
         }
     }
@@ -863,7 +848,7 @@ class AIChatApp {
         }
     }
     
-    showNotification(message, type = 'info', duration = 3000) {
+    showNotification(message, type = 'info') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.style.cssText = `
@@ -887,7 +872,7 @@ class AIChatApp {
         setTimeout(() => {
             notification.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => notification.remove(), 300);
-        }, duration);
+        }, 3000);
     }
     
     openImageGenModal() {
@@ -970,42 +955,16 @@ class AIChatApp {
             const response = await fetch('/api/status');
             const data = await response.json();
             
-            if (!this.statusIndicator) return;
-            
-            const statusDot = this.statusIndicator.querySelector('.status-dot');
-            const statusText = this.statusIndicator.querySelector('.status-text');
-            
-            if (!statusDot || !statusText) return;
-            
-            this.statusIndicator.classList.add('status-indicator');
-            this.statusIndicator.classList.remove('ready', 'error');
-            
             if (data.configured) {
-                this.statusIndicator.classList.add('ready');
-                statusDot.style.background = '#10b981';
-                statusDot.style.animation = 'none';
-                statusText.textContent = 'Ready';
-                statusText.style.color = '#10b981';
+                this.statusIndicator.className = 'status-indicator ready';
+                this.statusIndicator.querySelector('.status-text').textContent = 'Ready';
             } else {
-                this.statusIndicator.classList.add('error');
-                statusDot.style.background = '#ef4444';
-                statusDot.style.animation = 'none';
-                statusText.textContent = 'API Key Missing';
-                statusText.style.color = '#ef4444';
+                this.statusIndicator.className = 'status-indicator error';
+                this.statusIndicator.querySelector('.status-text').textContent = 'API Key Missing';
             }
         } catch (error) {
-            if (!this.statusIndicator) return;
-            
-            const statusDot = this.statusIndicator.querySelector('.status-dot');
-            const statusText = this.statusIndicator.querySelector('.status-text');
-            
-            if (!statusDot || !statusText) return;
-            
-            this.statusIndicator.classList.add('status-indicator', 'error');
-            statusDot.style.background = '#ef4444';
-            statusDot.style.animation = 'none';
-            statusText.textContent = 'Connection Error';
-            statusText.style.color = '#ef4444';
+            this.statusIndicator.className = 'status-indicator error';
+            this.statusIndicator.querySelector('.status-text').textContent = 'Connection Error';
         }
     }
     
