@@ -970,8 +970,12 @@ class AIChatApp {
             const response = await fetch('/api/status');
             const data = await response.json();
             
+            if (!this.statusIndicator) return;
+            
             const statusDot = this.statusIndicator.querySelector('.status-dot');
             const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            if (!statusDot || !statusText) return;
             
             this.statusIndicator.classList.add('status-indicator');
             this.statusIndicator.classList.remove('ready', 'error');
@@ -990,8 +994,12 @@ class AIChatApp {
                 statusText.style.color = '#ef4444';
             }
         } catch (error) {
+            if (!this.statusIndicator) return;
+            
             const statusDot = this.statusIndicator.querySelector('.status-dot');
             const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            if (!statusDot || !statusText) return;
             
             this.statusIndicator.classList.add('status-indicator', 'error');
             statusDot.style.background = '#ef4444';
