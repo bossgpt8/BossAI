@@ -46,11 +46,11 @@ const server = http.createServer(async (req, res) => {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`,
-                        'HTTP-Referer': 'https://replit.com',
+                        'HTTP-Referer': 'https://bossgpt-ai.vercel.app',
                         'X-Title': 'BossAI'
                     },
                     body: JSON.stringify({
-                        model: model || 'deepseek/deepseek-r1:free',
+                        model: model || 'amazon/nova-2-lite-v1:free',
                         messages: messages
                     })
                 });
@@ -75,13 +75,21 @@ const server = http.createServer(async (req, res) => {
         });
         return;
     }
-
+    
     if (req.method === 'POST' && req.url === '/api/generate-image') {
         let body = '';
         req.on('data', chunk => body += chunk.toString());
         req.on('end', async () => {
             try {
-                const { prompt } = JSON.parse(body);
+                // 1. --- DESTUCTURE modelId from the request body ---
+                const { prompt, modelId } = JSON.parse(body);
+                
+                if (!prompt || !modelId) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Missing prompt or modelId in request body' }));
+                    return;
+                }
+                
                 const hfApiKey = process.env.HUGGINGFACE_API_KEY;
                 
                 if (!hfApiKey) {
@@ -90,7 +98,41 @@ const server = http.createServer(async (req, res) => {
                     return;
                 }
 
-                const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+                // --- 2. DYNAMIC MODEL CONFIGURATION ---
+                const HF_MODEL_MAP = {
+                    "Tongyi-MAI/Z-Image-Turbo": "Tongyi-MAI/Z-Image-Turbo", // Your fast model
+                    "stabilityai/stable-diffusion-xl-base-1.0": "stabilityai/stable-diffusion-xl-base-1.0", // Your quality model
+                };
+                
+                const selectedHFModel = HF_MODEL_MAP[modelId];
+
+                if (!selectedHFModel) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: `Invalid image model ID: ${modelId}` }));
+                    return;
+                }
+                
+                const API_URL = `https://api-inference.huggingface.co/models/${selectedHFModel}`;
+                let parameters = {};
+
+                // --- 3. ADJUST PARAMETERS BASED ON THE MODEL ---
+                if (modelId === "Tongyi-MAI/Z-Image-Turbo") {
+                    // Optimized parameters for Z-Image-Turbo (fast)
+                    parameters = {
+                        num_inference_steps: 9, 
+                        guidance_scale: 0.0,    
+                        negative_prompt: "blurry, low quality, distorted, bad text, watermark"
+                    };
+                } else { 
+                    // Parameters for SDXL (high quality, default)
+                    parameters = {
+                        num_inference_steps: 30,
+                        guidance_scale: 7.5,
+                        negative_prompt: "blurry, low quality, distorted, bad anatomy"
+                    };
+                }
+
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${hfApiKey}`,
@@ -98,16 +140,15 @@ const server = http.createServer(async (req, res) => {
                     },
                     body: JSON.stringify({
                         inputs: prompt,
-                        parameters: {
-                            num_inference_steps: 30,
-                            guidance_scale: 7.5
-                        }
+                        parameters: parameters // Use the dynamic parameters
                     })
                 });
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `Image generation failed: ${response.status}`);
+                    const errorMessage = errorData.error || `Image generation failed with status: ${response.status}`;
+                    console.error(`HF API Error for ${modelId}:`, errorMessage);
+                    throw new Error(errorMessage);
                 }
 
                 const imageBuffer = await response.arrayBuffer();
@@ -124,7 +165,7 @@ const server = http.createServer(async (req, res) => {
         });
         return;
     }
-
+    
     if (req.method === 'GET' && req.url === '/api/status') {
         const hasApiKey = !!process.env.OPENROUTER_API_KEY;
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -152,7 +193,9 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     
-    let filePath = req.url === '/' ? '/index.html' : req.url;
+    // Parse URL to remove query strings
+    const urlPath = new URL(req.url, `http://${req.headers.host}`).pathname;
+    let filePath = urlPath === '/' ? '/index.html' : urlPath;
     filePath = path.join(__dirname, filePath);
     
     const ext = path.extname(filePath);

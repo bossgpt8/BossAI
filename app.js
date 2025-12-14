@@ -2,7 +2,7 @@ class AIChatApp {
     constructor() {
         this.messages = [];
         this.attachedImages = [];
-        this.currentModel = 'deepseek/deepseek-r1:free';
+        this.currentModel = 'amazon/nova-2-lite-v1:free';
         this.isGenerating = false;
         this.conversations = [];
         this.currentConversationId = null;
@@ -19,8 +19,8 @@ class AIChatApp {
         this.hasShownAuthModal = false;
         
         this.visionModels = [
-            'google/gemini-2.0-flash-exp:free',
-            'meta-llama/llama-4-scout:free'
+            'google/gemma-3-12b-it:free,
+            'google/gemma-3n-e2b-it:free'
         ];
         
         this.smartCommands = [
@@ -99,12 +99,24 @@ class AIChatApp {
                 this.firebaseReady = false;
                 this.hideAuthButton();
                 this.loadConversations();
+                this.showLocalStorageNotice();
             }
         } catch (error) {
             console.log('Firebase init failed, using localStorage');
             this.firebaseReady = false;
             this.hideAuthButton();
             this.loadConversations();
+            this.showLocalStorageNotice();
+        }
+    }
+    
+    showLocalStorageNotice() {
+        const hasSeenNotice = localStorage.getItem('local_storage_notice_seen');
+        if (!hasSeenNotice) {
+            setTimeout(() => {
+                this.showNotification('Your chats are saved locally on this device. Sign in to sync across devices!', 'info', 5000);
+                localStorage.setItem('local_storage_notice_seen', 'true');
+            }, 2000);
         }
     }
     
@@ -341,7 +353,10 @@ class AIChatApp {
         if (!this.user && !hasSkipped && !this.hasShownAuthModal && this.firebaseReady) {
             this.hasShownAuthModal = true;
             setTimeout(() => {
-                this.openAuthModal();
+                this.showNotification('Sign in to sync your chat history across all devices!', 'info', 5000);
+                setTimeout(() => {
+                    this.openAuthModal();
+                }, 1000);
             }, 1500);
         }
     }
@@ -419,7 +434,7 @@ class AIChatApp {
         
         this.attachBtn.addEventListener('click', () => {
             if (!this.isVisionCapable()) {
-                this.showNotification('Please select Gemini or Llama 4 Scout to attach images', 'warning');
+                this.showNotification('Please select Gemma or Gemma to attach images', 'warning');
                 return;
             }
             this.imageInput.click();
@@ -723,7 +738,7 @@ class AIChatApp {
                 response = "Okay, I'll stop talking.";
                 break;
             case 'introduce':
-                response = "Hi! I'm BossAI, your intelligent assistant. I can help you learn, answer questions, analyze images, generate artwork, and even control some features on your device like the flashlight! I'm here to help you with anything you need. What would you like to explore today?";
+                response = "Hi! I'm BossAI, your intelligent assistant. I can help you learn, answer questions, code, analyze images, generate artwork, and even control some features on your device like the flashlight! I'm here to help you with anything you need. What would you like to explore today?";
                 break;
             case 'tellJoke':
                 const jokes = [
@@ -767,6 +782,9 @@ class AIChatApp {
                 break;
             case 'cheerUp':
                 response = "I'm sorry you're feeling down. Remember, it's okay to have tough days. You're stronger than you know, and this feeling is temporary. Would you like me to tell you a joke, or maybe we can study something interesting together to take your mind off things? I'm here for you! 💙";
+                break;
+            case 'yourName'
+                response = "I'm BossAI, your intelligent assistant.";
                 break;
             case 'bored':
                 const boredSuggestions = [
@@ -848,7 +866,7 @@ class AIChatApp {
         }
     }
     
-    showNotification(message, type = 'info') {
+    showNotification(message, type = 'info', duration = 3000) {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.style.cssText = `
@@ -872,7 +890,7 @@ class AIChatApp {
         setTimeout(() => {
             notification.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        }, duration);
     }
     
     openImageGenModal() {
@@ -955,16 +973,42 @@ class AIChatApp {
             const response = await fetch('/api/status');
             const data = await response.json();
             
+            if (!this.statusIndicator) return;
+            
+            const statusDot = this.statusIndicator.querySelector('.status-dot');
+            const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            if (!statusDot || !statusText) return;
+            
+            this.statusIndicator.classList.add('status-indicator');
+            this.statusIndicator.classList.remove('ready', 'error');
+            
             if (data.configured) {
-                this.statusIndicator.className = 'status-indicator ready';
-                this.statusIndicator.querySelector('.status-text').textContent = 'Ready';
+                this.statusIndicator.classList.add('ready');
+                statusDot.style.background = '#10b981';
+                statusDot.style.animation = 'none';
+                statusText.textContent = 'Ready';
+                statusText.style.color = '#10b981';
             } else {
-                this.statusIndicator.className = 'status-indicator error';
-                this.statusIndicator.querySelector('.status-text').textContent = 'API Key Missing';
+                this.statusIndicator.classList.add('error');
+                statusDot.style.background = '#ef4444';
+                statusDot.style.animation = 'none';
+                statusText.textContent = 'API Key Missing';
+                statusText.style.color = '#ef4444';
             }
         } catch (error) {
-            this.statusIndicator.className = 'status-indicator error';
-            this.statusIndicator.querySelector('.status-text').textContent = 'Connection Error';
+            if (!this.statusIndicator) return;
+            
+            const statusDot = this.statusIndicator.querySelector('.status-dot');
+            const statusText = this.statusIndicator.querySelector('.status-text');
+            
+            if (!statusDot || !statusText) return;
+            
+            this.statusIndicator.classList.add('status-indicator', 'error');
+            statusDot.style.background = '#ef4444';
+            statusDot.style.animation = 'none';
+            statusText.textContent = 'Connection Error';
+            statusText.style.color = '#ef4444';
         }
     }
     
@@ -1018,13 +1062,20 @@ class AIChatApp {
     
     updateModelBadge() {
         const modelNames = {
-            'deepseek/deepseek-r1:free': 'DeepSeek R1',
-            'deepseek/deepseek-chat:free': 'DeepSeek V3',
-            'qwen/qwen3-32b:free': 'Qwen3 32B',
-            'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
-            'mistralai/mistral-small-3.1-24b-instruct:free': 'Mistral',
-            'google/gemini-2.0-flash-exp:free': 'Gemini 2.0',
-            'meta-llama/llama-4-scout:free': 'Llama 4 Scout'
+            'amazon/nova-2-lite-v1:free': 'Nova',
+            'google/gemma-3-12b-it:free': 'Gemma',
+            'google/gemma-3n-e2b-it:free': 'Gemma',
+            'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
+            'openai/gpt-oss-20b:free': 'Open AI',
+            'qwen/qwen3-234b-a22b:free': 'Qwen',
+            'google/gemini-2.0-flash-exp:free': 'Gemini',
+            'allenai/olmo-3-32b-think:free': 'Allen AI',
+            'mistralai/mistral-7b-instruct:free': 'Mistral AI',
+            'nousresearch/hermes-3-llama-3.1-405b:free': 'Hermes',
+            'qwen/qwen3-coder:free': 'Qwen',
+            'kwaipilot/kat-coder-pro:free': 'KAT-Coder',
+            'stabilityai/stable-diffusion-xl-base-1.0': 'Stability AI',
+            'Tongyi-MAI/Z-Image-Turbo': 'Z-Image-Turbo'
         };
         this.modelBadge.textContent = modelNames[this.currentModel] || 'AI';
     }
