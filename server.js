@@ -100,8 +100,8 @@ const server = http.createServer(async (req, res) => {
 
                 // --- 2. DYNAMIC MODEL CONFIGURATION ---
                 const HF_MODEL_MAP = {
-                    "Tongyi-MAI/Z-Image-Turbo": "Tongyi-MAI/Z-Image-Turbo", // Your fast model
-                    "stabilityai/stable-diffusion-xl-base-1.0": "stabilityai/stable-diffusion-xl-base-1.0", // Your quality model
+                    "hf-z-image-turbo": "Tongyi-MAI/Z-Image-Turbo", // Your fast model
+                    "hf-sdxl-base": "stabilityai/stable-diffusion-xl-base-1.0", // Your quality model
                 };
                 
                 const selectedHFModel = HF_MODEL_MAP[modelId];
@@ -116,7 +116,7 @@ const server = http.createServer(async (req, res) => {
                 let parameters = {};
 
                 // --- 3. ADJUST PARAMETERS BASED ON THE MODEL ---
-                if (modelId === "Tongyi-MAI/Z-Image-Turbo") {
+                if (modelId === "hf-z-image-turbo") {
                     // Optimized parameters for Z-Image-Turbo (fast)
                     parameters = {
                         num_inference_steps: 9, 
