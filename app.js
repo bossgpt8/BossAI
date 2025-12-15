@@ -1053,10 +1053,15 @@ class AIChatApp {
     updateModelBadge() {
         const modelNames = {
             'amazon/nova-2-lite-v1:free': 'Nova',
-            'deepseek/deepseek-chat:free': 'DeepSeek V3',
-            'qwen/qwen3-32b:free': 'Qwen3 32B',
+            'openai/gpt-oss-20b:free': 'OpenAI',
             'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
-            'mistralai/mistral-small-3.1-24b-instruct:free': 'Mistral',
+            'qwen/qwen3-235b-a22b:free': 'Qwen',
+            'google/gemini-2.0-flash-exp:free': 'Gemini',
+            'allenai/olmo-3-32b-think:free': 'Allen',
+            'mistralai/mistral-7b-instruct:free': 'Mistral',
+            'nousresearch/hermes-3-llama-3.1-405b:free': 'Hermes',
+            'qwen/qwen3-coder:free': 'Qwen',
+            'kwaipilot/kat-coder-pro:free': 'KAT-Coder',
             'google/gemma-3-12b-it:free': 'Gemma-12b',
             'google/gemma-3n-e2b-it:free': 'Gemma-e2b'
         };
@@ -1214,7 +1219,7 @@ class AIChatApp {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}`;
         
-        const avatar = role === 'user' ? '👤' : '🎓';
+        const avatar = role === 'user' ? '👤' : '😎';
         const roleName = role === 'user' ? 'You' : 'BossAI';
         
         let imagesHtml = '';
@@ -1311,7 +1316,7 @@ class AIChatApp {
         div.className = 'message assistant';
         div.innerHTML = `
             <div class="message-header">
-                <div class="message-avatar">🎓</div>
+                <div class="message-avatar">😎</div>
                 <span class="message-role">BossAI</span>
             </div>
             <div class="message-content">
