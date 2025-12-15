@@ -1052,13 +1052,13 @@ class AIChatApp {
     
     updateModelBadge() {
         const modelNames = {
-            'deepseek/deepseek-r1:free': 'DeepSeek R1',
+            'amazon/nova-2-lite-v1:free': 'Nova',
             'deepseek/deepseek-chat:free': 'DeepSeek V3',
             'qwen/qwen3-32b:free': 'Qwen3 32B',
             'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
             'mistralai/mistral-small-3.1-24b-instruct:free': 'Mistral',
-            'google/gemini-2.0-flash-exp:free': 'Gemini 2.0',
-            'meta-llama/llama-4-scout:free': 'Llama 4 Scout'
+            'google/gemma-3-12b-it:free': 'Gemma-12b',
+            'google/gemma-3n-e2b-it:free': 'Gemma-e2b'
         };
         this.modelBadge.textContent = modelNames[this.currentModel] || 'AI';
     }
