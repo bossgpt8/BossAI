@@ -19,8 +19,8 @@ class AIChatApp {
         this.hasShownAuthModal = false;
         
         this.visionModels = [
-            'google/gemini-2.0-flash-exp:free',
-            'meta-llama/llama-4-scout:free'
+            'google/gemma-3-12b-it:free',
+            'google/gemma-3n-e2b-it:free'
         ];
         
         this.smartCommands = [
@@ -413,13 +413,6 @@ class AIChatApp {
     initEventListeners() {
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         
-        this.messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
-        
         this.messageInput.addEventListener('input', () => {
             this.autoResize();
             this.updateSendButton();
@@ -434,7 +427,7 @@ class AIChatApp {
         
         this.attachBtn.addEventListener('click', () => {
             if (!this.isVisionCapable()) {
-                this.showNotification('Please select Gemini or Llama 4 Scout to attach images', 'warning');
+                this.showNotification('Please select Gemini-12b or Gemini-e2b Scout to attach images', 'warning');
                 return;
             }
             this.imageInput.click();
