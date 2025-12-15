@@ -2,7 +2,7 @@ class AIChatApp {
     constructor() {
         this.messages = [];
         this.attachedImages = [];
-        this.currentModel = 'amazon/nova-2-lite-v1:free';
+        this.currentModel = 'deepseek/deepseek-r1:free';
         this.isGenerating = false;
         this.conversations = [];
         this.currentConversationId = null;
@@ -19,8 +19,8 @@ class AIChatApp {
         this.hasShownAuthModal = false;
         
         this.visionModels = [
-            'google/gemma-3-12b-it:free,
-            'google/gemma-3n-e2b-it:free'
+            'google/gemini-2.0-flash-exp:free',
+            'meta-llama/llama-4-scout:free'
         ];
         
         this.smartCommands = [
@@ -434,7 +434,7 @@ class AIChatApp {
         
         this.attachBtn.addEventListener('click', () => {
             if (!this.isVisionCapable()) {
-                this.showNotification('Please select Gemma or Gemma to attach images', 'warning');
+                this.showNotification('Please select Gemini or Llama 4 Scout to attach images', 'warning');
                 return;
             }
             this.imageInput.click();
@@ -738,7 +738,7 @@ class AIChatApp {
                 response = "Okay, I'll stop talking.";
                 break;
             case 'introduce':
-                response = "Hi! I'm BossAI, your intelligent assistant. I can help you learn, answer questions, code, analyze images, generate artwork, and even control some features on your device like the flashlight! I'm here to help you with anything you need. What would you like to explore today?";
+                response = "Hi! I'm BossAI, your intelligent assistant. I can help you learn, answer questions, analyze images, generate artwork, and even control some features on your device like the flashlight! I'm here to help you with anything you need. What would you like to explore today?";
                 break;
             case 'tellJoke':
                 const jokes = [
@@ -782,9 +782,6 @@ class AIChatApp {
                 break;
             case 'cheerUp':
                 response = "I'm sorry you're feeling down. Remember, it's okay to have tough days. You're stronger than you know, and this feeling is temporary. Would you like me to tell you a joke, or maybe we can study something interesting together to take your mind off things? I'm here for you! 💙";
-                break;
-            case 'yourName'
-                response = "I'm BossAI, your intelligent assistant.";
                 break;
             case 'bored':
                 const boredSuggestions = [
@@ -1062,18 +1059,13 @@ class AIChatApp {
     
     updateModelBadge() {
         const modelNames = {
-            'amazon/nova-2-lite-v1:free': 'Nova',
-            'google/gemma-3-12b-it:free': 'Gemma',
-            'google/gemma-3n-e2b-it:free': 'Gemma',
-            'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
-            'openai/gpt-oss-20b:free': 'Open AI',
-            'qwen/qwen3-234b-a22b:free': 'Qwen',
-            'google/gemini-2.0-flash-exp:free': 'Gemini',
-            'allenai/olmo-3-32b-think:free': 'Allen AI',
-            'mistralai/mistral-7b-instruct:free': 'Mistral AI',
-            'nousresearch/hermes-3-llama-3.1-405b:free': 'Hermes',
-            'qwen/qwen3-coder:free': 'Qwen',
-            'kwaipilot/kat-coder-pro:free': 'KAT-Coder'
+            'deepseek/deepseek-r1:free': 'DeepSeek R1',
+            'deepseek/deepseek-chat:free': 'DeepSeek V3',
+            'qwen/qwen3-32b:free': 'Qwen3 32B',
+            'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
+            'mistralai/mistral-small-3.1-24b-instruct:free': 'Mistral',
+            'google/gemini-2.0-flash-exp:free': 'Gemini 2.0',
+            'meta-llama/llama-4-scout:free': 'Llama 4 Scout'
         };
         this.modelBadge.textContent = modelNames[this.currentModel] || 'AI';
     }
