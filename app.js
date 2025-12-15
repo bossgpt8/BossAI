@@ -19,7 +19,7 @@ class AIChatApp {
         this.hasShownAuthModal = false;
         
         this.visionModels = [
-            'google/gemma-3-12b-it:free',
+            'google/gemma-3-12b-it:free,
             'google/gemma-3n-e2b-it:free'
         ];
         
@@ -1063,19 +1063,17 @@ class AIChatApp {
     updateModelBadge() {
         const modelNames = {
             'amazon/nova-2-lite-v1:free': 'Nova',
-            'google/gemma-3-12b-it:free': 'Gemma-12b',
-            'google/gemma-3n-e2b-it:free': 'Gemma-e2b',
+            'google/gemma-3-12b-it:free': 'Gemma',
+            'google/gemma-3n-e2b-it:free': 'Gemma',
             'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
             'openai/gpt-oss-20b:free': 'Open AI',
-            'qwen/qwen3-235b-a22b:free': 'Qwen',
+            'qwen/qwen3-234b-a22b:free': 'Qwen',
             'google/gemini-2.0-flash-exp:free': 'Gemini',
             'allenai/olmo-3-32b-think:free': 'Allen AI',
             'mistralai/mistral-7b-instruct:free': 'Mistral AI',
             'nousresearch/hermes-3-llama-3.1-405b:free': 'Hermes',
             'qwen/qwen3-coder:free': 'Qwen',
-            'kwaipilot/kat-coder-pro:free': 'KAT-Coder',
-            'stabilityai/stable-diffusion-xl-base-1.0': 'Stability AI',
-            'Tongyi-MAI/Z-Image-Turbo': 'Z-Image-Turbo'
+            'kwaipilot/kat-coder-pro:free': 'KAT-Coder'
         };
         this.modelBadge.textContent = modelNames[this.currentModel] || 'AI';
     }
