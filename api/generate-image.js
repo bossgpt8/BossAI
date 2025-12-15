@@ -33,8 +33,8 @@ module.exports = async function handler(req, res) {
     let parameters = {};
     
     const HF_MODEL_MAP = {
-        "Tongyi-MAI/Z-Image-Turbo": "Tongyi-MAI/Z-Image-Turbo",
-        "stabilityai/stable-diffusion-xl-base-1.0": "stabilityai/stable-diffusion-xl-base-1.0",
+        "hf-z-image-turbo": "Tongyi-MAI/Z-Image-Turbo",
+        "hf-sdxl-base": "stabilityai/stable-diffusion-xl-base-1.0",
     };
     
     const selectedHFModel = HF_MODEL_MAP[modelId];
@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     API_URL = `https://api-inference.huggingface.co/models/${selectedHFModel}`;
     
     // --- 3. ADJUST PARAMETERS BASED ON THE MODEL ---
-    if (modelId === "Tongyi-MAI/Z-Image-Turbo") {
+    if (modelId === "hf-z-image-turbo") {
         // Optimized parameters for Z-Image-Turbo (fast)
         parameters = {
             num_inference_steps: 9, 
