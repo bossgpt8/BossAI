@@ -2,7 +2,7 @@ class AIChatApp {
     constructor() {
         this.messages = [];
         this.attachedImages = [];
-        this.currentModel = 'deepseek/deepseek-r1:free';
+        this.currentModel = 'amazon/nova-2-lite-v1:free';
         this.isGenerating = false;
         this.conversations = [];
         this.currentConversationId = null;
@@ -1062,7 +1062,7 @@ class AIChatApp {
             'deepseek/deepseek-r1:free': 'DeepSeek R1',
             'deepseek/deepseek-chat:free': 'DeepSeek V3',
             'qwen/qwen3-32b:free': 'Qwen3 32B',
-            'meta-llama/llama-3.3-70b-instruct:free': 'Llama 3.3 70B',
+            'meta-llama/llama-3.3-70b-instruct:free': 'Llama',
             'mistralai/mistral-small-3.1-24b-instruct:free': 'Mistral',
             'google/gemini-2.0-flash-exp:free': 'Gemini 2.0',
             'meta-llama/llama-4-scout:free': 'Llama 4 Scout'
